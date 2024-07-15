@@ -1,37 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import mysql.connector
+from db import connect
 from mysql.connector import Error
 
 app = Flask(__name__)
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'mydb'
 app.secret_key = 'your_secret_key'
-
-# Function to connect to MySQL database
-
-
-def connect():
-    try:
-        conn = mysql.connector.connect(
-            host=app.config['MYSQL_HOST'],
-            user=app.config['MYSQL_USER'],
-            password=app.config['MYSQL_PASSWORD'],
-            database=app.config['MYSQL_DB']
-        )
-        if conn.is_connected():
-            print('Connected to MySQL database')
-        return conn
-    except Error as e:
-        print(e)
-        return None
-
 
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -63,7 +39,7 @@ def login():
                     # Redirect to dashboard
                     return redirect(url_for('dashboard'))
                 else:
-                    error = 'Invalid username or password',
+                    error = 'Invalid username or password'
 
             return render_template('login.html', error=error)
         else:
@@ -71,7 +47,6 @@ def login():
     except Error as e:
         print(e)
         return 'Error: Login Failed', 500
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -90,8 +65,8 @@ def register():
                 cursor = conn.cursor()
 
                 # Execute the SQL query to insert data into the database
-                cursor.execute('INSERT INTO users (name, email, password, phone, address, gender) VALUES (%s, %s, %s, %s, %s, %s)', (
-                    name, email, password, phone, address, gender))
+                cursor.execute('INSERT INTO users (name, email, password, phone, address, gender) VALUES (%s, %s, %s, %s, %s, %s)', 
+                    (name, email, password, phone, address, gender))
                 conn.commit()
                 cursor.close()
                 conn.close()
@@ -106,7 +81,6 @@ def register():
         print(e)
         return 'Error: Registration failed', 500
 
-
 @app.route('/dashboard')
 def dashboard():
     # Check if the user is logged in
@@ -114,7 +88,6 @@ def dashboard():
         return f"Welcome to your dashboard, {session['name']}!"
     else:
         return redirect(url_for('login'))
-
 
 if __name__ == "__main__":
     app.run(debug=True)
